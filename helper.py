@@ -18,6 +18,7 @@ def load_data_np(relative_path, var_name = None):
     return np.array(mat_data)
 
 #loads large matlab data using h5py
+#needs to be tranposed because of h5py workings
 def load_large_data (relative_path, var_name = None):
     with h5py.File(relative_path, 'r') as raw_data:
         raw_data = h5py.File(relative_path, 'r')
@@ -28,26 +29,31 @@ def load_large_data (relative_path, var_name = None):
         mat_data = raw_data[file_name]
     return np.array(mat_data)
 
+def load_from_np(file_path):
+    return np.load(file_path).T
+
 
 
 #gets correlation matrix for all mice and averages them out 
 #mouse_num paramter allows you to select specific mouse only
-#return averaged corr. matrix as well as std. corr matrix
-def get_corr_matrix(mice_data, mouse_num = 'all'):
+#return averaged corr. matrix as well as std. corr matrix for frames from start to end
+def get_corr_matrix(mice_data, mouse_num = 'all', start = 0, end = 10000):
     matrices = []
+    end = min(end, mice_data.shape[-1])
     if mouse_num != 'all':
-        mouse_data = mice_data[mouse_num, :, 1200:]
-        return np.corrcoef(mouse_data), 0
+        mouse_data = mice_data[mouse_num, :, start: end]
     for i in range(mice_data.shape[0]):
         #need to exclude first 1200 baseline frames
-        mouse_data = mice_data[i, :, 1200:]
+        mouse_data = mice_data[i, :, start:end]
         matrices.append(np.corrcoef(mouse_data))
     np_matrices = np.array(matrices)
     return np.mean(np_matrices, axis = 0), np.std(np_matrices, axis = 0)
 
-#gets correlation data from singular mouse
-def get_corr_matrix_mouse(mouse_data):
-    return np.corrcoef(mouse_data[:, 1200:])
+#gets correlation data from singular mouse data
+#start and end specify which frames
+def get_corr_matrix_mouse(mouse_data, start = 0, end = 10000):
+    end = min(end, mouse_data.shape[-1])
+    return np.corrcoef(mouse_data[:, start: end])
 
 #gets num over certain correlation value, and indices
 #excludes if they are in the same brain region
@@ -64,6 +70,15 @@ def num_over_corr(corr_matrix, value):
                     indices.append([i, j])
     return num, indices
 
+def num_over_corr2(corr_matrix, value):
+    indices = []
+    num = 0
+    for i in range(0, len(corr_matrix), 2):
+        if corr_matrix[i][i+1] >= value:
+            num += 1
+            indices.append([i, i + 1])
+    return num, indices
+
 #creates correlation matrix and plots via seaborn
 def plot_correlation(corr_matrix, x_label = " ", y_label = " ", title = " ", min = 'omit', max= 'omit'):
     plt.figure()
@@ -74,6 +89,17 @@ def plot_correlation(corr_matrix, x_label = " ", y_label = " ", title = " ", min
     plt.xlabel(x_label)
     plt.ylabel(y_label)
     plt.title(title)
+    plt.show()
+
+#plots numbers along with colots
+#plots from 1-10 by multiplying by 10, makes more readable
+def plot_correlation_ROI(corr_matrix, x_label = "Region 1", y_label = "Region 2"):
+    corr_matrix = np.round(corr_matrix, 1) * 10
+    mask = np.triu(np.ones_like(corr_matrix, dtype=bool))
+    plt.figure()
+    sns.heatmap(corr_matrix, cmap='coolwarm', annot=True, mask=mask)
+    plt.xlabel(x_label)
+    plt.ylabel(y_label)
     plt.show()
 
 #generates plots based on file path and preferred labels

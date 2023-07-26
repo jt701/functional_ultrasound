@@ -21,7 +21,7 @@ def bandpass_filter(cbv_data, lowcut, highcut, order):
     filtered_data = filtfilt(b, a, cbv_data, axis=-1)
     return filtered_data
 
-#removes global signal
+#removes global signal, should only use on a singular mouse
 #modeled by global signal and constant noise (np.ones)
 def global_signal_regression(cbv_data):
     voxels_time_series = cbv_data.reshape(-1, cbv_data.shape[-1]).T
@@ -32,14 +32,21 @@ def global_signal_regression(cbv_data):
     regressed_time_series = voxels_time_series - np.matmul(X.T, regression_coeffs)
     return regressed_time_series.T.reshape(cbv_data.shape)
 
+#GSR using projection instead of regression
+def global_signal_regression_proj(cbv_data):
+    voxels_time_series = cbv_data.reshape(-1, cbv_data.shape[-1])
+    U, sigma, V = np.linalg.svd(voxels_time_series.T, full_matrices=False)
+    global_signal = U[:, 0]
+    global_signal = global_signal.reshape(global_signal.shape[0], 1)
+    projection = np.matmul(voxels_time_series, global_signal)
+    denoised_matrix = voxels_time_series - np.matmul(projection, global_signal.T)
+    return denoised_matrix.reshape(cbv_data.shape)
+
 def pixel_to_ROI(pixel_data, segment_masks, data_idx):
     #to implement
     print(0)
 
 
-# cbv_data = helper.load_large_data('matlab_files/Time_Series_Data/pixel_data/nalket_m_pix.mat')
-# print('half way there')
-# np.save('python_data/time_series_data/pixel_data', cbv_data)
 
 
 
