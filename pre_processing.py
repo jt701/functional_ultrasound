@@ -1,8 +1,8 @@
 from scipy.signal import butter, filtfilt
 import numpy as np
 
-import sys
-sys.path.append('../../helper.py')
+# import sys
+# sys.path.append('../../helper.py')
 import helper as helper 
 
 #implement bandpass filter and global signal regression

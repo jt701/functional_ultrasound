@@ -19,7 +19,7 @@ def load_data_np(relative_path, var_name = None):
 
 #loads large matlab data using h5py
 #needs to be tranposed because of h5py workings
-def load_large_data (relative_path, var_name = None):
+def load_large_data(relative_path, var_name = None):
     with h5py.File(relative_path, 'r') as raw_data:
         raw_data = h5py.File(relative_path, 'r')
         if var_name:
@@ -29,31 +29,48 @@ def load_large_data (relative_path, var_name = None):
         mat_data = raw_data[file_name]
     return np.array(mat_data)
 
+#loads large files from np, need to tranposed if using h5py
 def load_from_np(file_path):
     return np.load(file_path).T
 
-
+#save large file from np given that they require h5py
+def save_large_np(file_path, destination_folder):
+    data = load_large_data(file_path)
+    full_file_name = file_path.split('/')[-1]
+    file_name = full_file_name.split('.')[0] 
+    save_path = destination_folder + "/" + file_name
+    np.save(save_path, data)
+    
 
 #gets correlation matrix for all mice and averages them out 
 #mouse_num paramter allows you to select specific mouse only
 #return averaged corr. matrix as well as std. corr matrix for frames from start to end
-def get_corr_matrix(mice_data, mouse_num = 'all', start = 0, end = 10000):
+def get_corr_matrix(mice_data, mouse_num = -1, start = 0, end = 10000):
     matrices = []
     end = min(end, mice_data.shape[-1])
-    if mouse_num != 'all':
-        mouse_data = mice_data[mouse_num, :, start: end]
+    if mouse_num != -1:
+        return np.corrcoef(mice_data[mouse_num, :, start: end])
     for i in range(mice_data.shape[0]):
-        #need to exclude first 1200 baseline frames
         mouse_data = mice_data[i, :, start:end]
         matrices.append(np.corrcoef(mouse_data))
     np_matrices = np.array(matrices)
-    return np.mean(np_matrices, axis = 0), np.std(np_matrices, axis = 0)
+    return np.mean(np_matrices, axis = 0), np.std(np_matrices, axis = 0, ddof=1) #ddof because we have sample 
 
 #gets correlation data from singular mouse data
 #start and end specify which frames
 def get_corr_matrix_mouse(mouse_data, start = 0, end = 10000):
     end = min(end, mouse_data.shape[-1])
     return np.corrcoef(mouse_data[:, start: end])
+
+#gets all corr matrix, samples is first dimension
+def get_all_corr_matrix(mice_data):
+    matrices = []
+    for i in range(mice_data.shape[0]):
+        mouse_data = mice_data[i, :, :]
+        matrices.append(np.corrcoef(mouse_data))
+    np_matrices = np.array(matrices)
+    return np_matrices
+    
 
 #gets num over certain correlation value, and indices
 #excludes if they are in the same brain region
@@ -70,6 +87,8 @@ def num_over_corr(corr_matrix, value):
                     indices.append([i, j])
     return num, indices
 
+#gets num over correlation for same brain region across hemispheres
+#acts as control, expected to be high
 def num_over_corr2(corr_matrix, value):
     indices = []
     num = 0
