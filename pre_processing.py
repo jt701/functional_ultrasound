@@ -34,14 +34,15 @@ def global_signal_regression(cbv_data):
     return regressed_time_series.T.reshape(cbv_data.shape)
 
 #GSR using projection instead of regression
+#reassigns voxel_time_series to save memory
 def global_signal_regression_proj(cbv_data):
     voxels_time_series = cbv_data.reshape(-1, cbv_data.shape[-1])
     U, sigma, V = np.linalg.svd(voxels_time_series.T, full_matrices=False)
     global_signal = U[:, 0]
     global_signal = global_signal.reshape(global_signal.shape[0], 1)
     projection = np.matmul(voxels_time_series, global_signal)
-    denoised_matrix = voxels_time_series - np.matmul(projection, global_signal.T)
-    return denoised_matrix.reshape(cbv_data.shape)
+    voxel_time_series = voxels_time_series - np.matmul(projection, global_signal.T)
+    return voxel_time_series.reshape(cbv_data.shape)
 
 
 #takes pixel data for single mouse and groups it to ROI
@@ -82,10 +83,43 @@ def pixel_to_ROI_pixdata(pixel_data, masks, pix_areas, data_idx):
 
     return roi_data
 
+#doesn't load any data for you
+def manual_pixel_to_ROI(pixel_data, mask, pix_area):
+    masked_data = mask[:, :, :, np.newaxis] * pixel_data
+    sum_pixels = np.sum(masked_data, axis=(1, 2))
+    roi_data = sum_pixels / pix_area[:, np.newaxis]
 
+    return roi_data
+
+#takes entire group and returns the ROI data 
+#very slow due to huge data set and new axes
+def group_to_ROI(pix_data, masks, pix_areas):
+    
+    masks_reshaped = masks[:, :, np.newaxis, :, :]  # Shape: 9 mice x 30 regions x 1 x 98 x 92
+    masked_data = masks_reshaped * pix_data[:, np.newaxis, :, :, :]  
+    sum_pixels = np.sum(masked_data, axis=(2, 3))  
+    roi_data = sum_pixels / pix_areas[:, :, np.newaxis]
+    
+    return roi_data
+
+#keep roi pixels from mask only
+def keep_roi_pixels(pix_data, masks):
+    sum_masks = np.sum(masks, axis=0)
+    binary_mask = sum_masks > 0
+    masked_data = pix_data * binary_mask[:, :, np.newaxis]
+    return masked_data
+
+# t = time.time()
+# b = pixel_to_ROI("python_data/time_series_data/pixel_data/nalket_m_pix.npy",
+#              "matlab_files/Time_Series_Data/segment_masks/nalket_m_mask.mat",
+#              "matlab_files/Time_Series_Data/pix_area/pix_area_nalket_m.mat", 5)
+# print(time.time() - t)
+# t2 = time.time()
 # b = pixel_to_ROI_vectorized("python_data/time_series_data/pixel_data/nalket_m_pix.npy",
 #              "matlab_files/Time_Series_Data/segment_masks/nalket_m_mask.mat",
 #              "matlab_files/Time_Series_Data/pix_area/pix_area_nalket_m.mat", 5)
+# print(time.time() - t2)
+
 
 
         

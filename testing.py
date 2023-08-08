@@ -129,15 +129,59 @@ def test_ROI_segmentation():
 
 def gsr_pixel_test():
     t = time.time()
-    pixel = helper.load_from_np("python_data/time_series_data/pixel_data/nalket_m_pix.npy")[3, :, :, :]
-    # gsr_pixel = pre.bandpass_filter(pixel, 0.01, 0.1, 4)
-    gsr_pixel = pre.global_signal_regression_proj(pixel)
+    gsr_pixel = helper.load_from_np("python_data/time_series_data/pixel_data/nalket_m_pix.npy")[3, :, :, :]
+    # gsr_pixel = pre.bandpass_filter(gsr_pixel, 0.01, 0.1, 4)
+    # gsr_pixel = pre.global_signal_regression_proj(pixel)
     # gsr_pixel = pre.bandpass_filter(gsr_pixel, 0.01, 0.1, 4)
     roi = pre.pixel_to_ROI_pixdata(gsr_pixel, "matlab_files/Time_Series_Data/segment_masks/nalket_m_mask.mat",
              "matlab_files/Time_Series_Data/pix_area/pix_area_nalket_m.mat", 3)
-    # roi = pre.bandpass_filter(roi, 0.01, 0.1, 4)
+    roi = pre.bandpass_filter(roi, 0.01, 0.1, 4)
     corr = helper.get_corr_matrix_mouse(roi)
     print(time.time() - t)
     helper.plot_correlation_ROI(corr)
 
-gsr_pixel_test()
+# gsr_pixel_test()
+
+def test_group_roi():
+    two_pixels = helper.load_from_np("python_data/time_series_data/pixel_data/nalket_m_pix.npy")[:2, :, :, :]
+    mask = helper.load_data_np("matlab_files/Time_Series_Data/segment_masks/nalket_m_mask.mat")[:2, :, :, :]
+    pix_areas = helper.load_data_np("matlab_files/Time_Series_Data/pix_area/pix_area_nalket_m.mat")[:2, :]
+    two_pixels = pre.group_to_ROI(two_pixels, mask, pix_areas)
+    
+    rois = helper.load_from_np("matlab_files/Time_Series_Data/ROI_CBV_Data/rel_cbv_nalket_m.mat")[:2, :, :]
+    
+    print(rois.shape)
+    print(two_pixels.shape)
+    print(np.sum(two_pixels - rois))
+
+# test_group_roi()
+
+#looping through bandpass is much faster
+#vectorization optimizes within function but not for huge datasets and between subjects
+#my datset is 40 million withoyt vectorization, 360 million with 
+def band_time_test():
+    pix_data = helper.load_from_np("python_data/time_series_data/pixel_data/nalket_m_pix.npy")
+    
+    t1 = time.time()
+    pre.global_signal_regression_proj(pix_data)
+    t2 = time.time()
+    print(t2-t1)
+    for i in range(pix_data.shape[0]):
+        pre.global_signal_regression_proj(pix_data[i, :, :, :])
+    t3 = time.time()
+    print(t3 - t2)
+    
+# band_time_test()
+
+#succesful, manual works as well as keep 
+def test_keep_roi():
+    pix_data = helper.load_from_np("python_data/time_series_data/pixel_data/nalket_m_pix.npy")[4, :, :, :]
+    pix_area = helper.load_data_np("matlab_files/Time_Series_Data/pix_area/pix_area_nalket_m.mat")[4, :]
+    roi_data = helper.load_data_np("matlab_files/Time_Series_Data/ROI_CBV_Data/rel_cbv_nalket_m.mat")[4, :, :]
+    mask = helper.load_data_np("matlab_files/Time_Series_Data/segment_masks/nalket_m_mask.mat")[4, :, :, :]
+    keep = pre.keep_roi_pixels(pix_data, mask)
+    new_roi = pre.manual_pixel_to_ROI(keep, mask, pix_area)
+    print(np.sum(new_roi - roi_data))
+
+# test_keep_roi()
+

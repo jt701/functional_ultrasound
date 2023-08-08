@@ -1,4 +1,10 @@
-#design
+import sys
+import os
+
+# appending parent directory to path
+current_dir = os.path.dirname(os.path.abspath("/Users/josepht/functional-ultrasound-ketamine/data_analysis/expirements/ROI_expirements.py"))
+parent_dir = os.path.dirname(current_dir)
+sys.path.append(parent_dir)
 import helper as helper
 import pre_processing as pre
 import matplotlib.pyplot as plt
