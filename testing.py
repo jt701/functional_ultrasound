@@ -1,15 +1,15 @@
 # file to do expirements without losing past ideas
 # put current expirement at bottom and run
 import numpy as np
+import time
 import pre_processing as pre
 import helper as helper
 import matplotlib.pyplot as plt
 import seed_corr as seed
 import stats 
 
+
 # test SVD and global signal regression
-
-
 def test_SVD():
     data = helper.load_data_np(
         relative_path="matlab_files/Time_Series_Data/ROI_CBV_Data/reg_cbv_salket_m.mat")
@@ -56,7 +56,7 @@ def test_seed():
     pixel = pixel[0, :, :, :]
     pixel = pre.bandpass_filter(pixel, 0.01, 0.1, 4)
     # pixel = pre.global_signal_regression_proj(pixel)
-    roi = helper.load_data_np("matlab_files/Time_Series_Data/ROI_CBV_Data/reg_cbv_nalket_m.mat")[0, :, :]
+    roi = helper.load_data_np("matlab_files/Time_Series_Data/ROI_CBV_Data/rel_cbv_nalket_m.mat")[0, :, :]
     roi = pre.bandpass_filter(roi, 0.01, 0.1, 4)
     # roi = pre.global_signal_regression_proj(roi)
     corr = seed.mouse_pixel_corr(pixel, roi, 17, start = 1600, end = 2000)
@@ -99,7 +99,45 @@ def test_fisher_tscore():
     data = helper.load_data_np("matlab_files/Time_Series_Data/ROI_CBV_Data/rel_cbv_nalket_m.mat")
     region_data = pre.bandpass_filter(data[:, :, 1200:1800], 0.01, 0.1, 4)
     corr_matrix = helper.get_all_corr_matrix(region_data)
-    sig_matrix = stats.fisher_sig_val(corr_matrix, 0.05)
+    sig_matrix = stats.fisher_sig_val(corr_matrix, 0.01)
     helper.plot_correlation_ROI(sig_matrix)
     
-test_fisher_tscore()
+# test_fisher_tscore()
+
+def test_load_pix():
+    data = helper.load_data_np("matlab_files/Time_Series_Data/pix_area/pix_area_nalket_m.mat")
+    print(data[2, :].shape)
+    # data = data[1, 60, 57, :]
+    # cleaned_data = pre.bandpass_filter(data, 0.01, 0.1, 4)
+    # plt.plot(cleaned_data)
+    # plt.show()
+
+# test_load_pix()
+
+def test_ROI_segmentation():
+    # roi = helper.load_data_np("matlab_files/Time_Series_Data/ROI_CBV_Data/rel_cbv_nalket_m.mat")[5, :, :]
+    a = pre.pixel_to_ROI_vectorized("python_data/time_series_data/pixel_data/nalket_m_pix.npy",
+             "matlab_files/Time_Series_Data/segment_masks/nalket_m_mask.mat",
+             "matlab_files/Time_Series_Data/pix_area/pix_area_nalket_m.mat", 5)
+    # print(np.sum(roi - a))
+    a = pre.bandpass_filter(a[:, 1200:1800], 0.01, 0.1, 4)
+    a= pre.global_signal_regression_proj(a)
+    corr = helper.get_corr_matrix_mouse(a)
+    helper.plot_correlation_ROI(corr)
+
+# test_ROI_segmentation()
+
+def gsr_pixel_test():
+    t = time.time()
+    pixel = helper.load_from_np("python_data/time_series_data/pixel_data/nalket_m_pix.npy")[3, :, :, :]
+    # gsr_pixel = pre.bandpass_filter(pixel, 0.01, 0.1, 4)
+    gsr_pixel = pre.global_signal_regression_proj(pixel)
+    # gsr_pixel = pre.bandpass_filter(gsr_pixel, 0.01, 0.1, 4)
+    roi = pre.pixel_to_ROI_pixdata(gsr_pixel, "matlab_files/Time_Series_Data/segment_masks/nalket_m_mask.mat",
+             "matlab_files/Time_Series_Data/pix_area/pix_area_nalket_m.mat", 3)
+    # roi = pre.bandpass_filter(roi, 0.01, 0.1, 4)
+    corr = helper.get_corr_matrix_mouse(roi)
+    print(time.time() - t)
+    helper.plot_correlation_ROI(corr)
+
+gsr_pixel_test()
