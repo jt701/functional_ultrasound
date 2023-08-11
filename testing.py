@@ -29,9 +29,9 @@ def test_SVD():
 
 def test_ROI_plots():
     data = helper.load_data_np(
-        relative_path="matlab_files/Time_Series_Data/ROI_CBV_Data/reg_cbv_salket_m.mat")
-    region_data = pre.bandpass_filter(data, 0.01, 0.1, 4)
-    corr_matrix = helper.get_corr_matrix(region_data, start=1300, end=1450)[0]
+    relative_path="matlab_files/Time_Series_Data/ROI_CBV_Data/rel_cbv_nalket_m.mat")
+    # region_data = pre.bandpass_filter(data, 0.01, 0.1, 4)
+    corr_matrix = helper.get_corr_matrix(data, start=1800, end=2400)[1]
     helper.plot_correlation_ROI(corr_matrix)
 
 
@@ -184,5 +184,14 @@ def test_keep_roi():
     print(np.sum(new_roi - roi_data))
 
 # test_keep_roi()
+
+def plot_region():
+    data = helper.load_data_np("matlab_files/Time_Series_Data/ROI_CBV_Data/rel_cbv_nalket_m.mat")
+    #compare 4 and 7 to bandpass
+    # for i in range(data.shape[0]):
+    #     data[i] = pre.global_signal_regression_proj(data[i])
+    plt.plot(data[7, 29, :])
+    plt.show()
+plot_region()
 
 

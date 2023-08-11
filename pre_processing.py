@@ -41,8 +41,8 @@ def global_signal_regression_proj(cbv_data):
     global_signal = U[:, 0]
     global_signal = global_signal.reshape(global_signal.shape[0], 1)
     projection = np.matmul(voxels_time_series, global_signal)
-    voxel_time_series = voxels_time_series - np.matmul(projection, global_signal.T)
-    return voxel_time_series.reshape(cbv_data.shape)
+    denoised_time_series = voxels_time_series - np.matmul(projection, global_signal.T)
+    return denoised_time_series.reshape(cbv_data.shape)
 
 
 #takes pixel data for single mouse and groups it to ROI
@@ -83,7 +83,7 @@ def pixel_to_ROI_pixdata(pixel_data, masks, pix_areas, data_idx):
 
     return roi_data
 
-#doesn't load any data for you
+#doesn't load any data for you, good for one mouse
 def manual_pixel_to_ROI(pixel_data, mask, pix_area):
     masked_data = mask[:, :, :, np.newaxis] * pixel_data
     sum_pixels = np.sum(masked_data, axis=(1, 2))
@@ -102,7 +102,7 @@ def group_to_ROI(pix_data, masks, pix_areas):
     
     return roi_data
 
-#keep roi pixels from mask only
+#keep roi pixels from mask only, one mouse at a time
 def keep_roi_pixels(pix_data, masks):
     sum_masks = np.sum(masks, axis=0)
     binary_mask = sum_masks > 0
