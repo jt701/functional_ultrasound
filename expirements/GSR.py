@@ -1,6 +1,7 @@
 #functions to test GSR and placement with relation to bandpass filtering, saved averages/std to outputs/GSR
 #p = pixel, r = roi, GSR= global signal regression, BP = bandpass filtering
 #done on nalket m group, using -10 to 0 min, 0 - 10 min, 10 - 20 min
+#data has been baseline adjusted, and spatiotemporally filtered beforehand
 #BP is linear so roi is equivalent to pixel for it, masking technique only is useful for GSR pixel
 
 import sys
@@ -16,6 +17,7 @@ import pre_processing as pre
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+import time
 
 #DATA FOR THIS EXPIREMENT
 pix_path = "python_data/time_series_data/pixel_data/nalket_m_pix.npy"
@@ -101,7 +103,7 @@ def get_corr_save(data, directory, base_name, title):
 
 #calls helper for three time periods, assumes 9 by 30 by 4201 time series data
 def time_periods_save(data, directory, curr_expirement):
-    get_corr_save(data[:, :, 600:1200], directory, curr_expirement + "_-10to0min", curr_expirement + " 10 to 0 min")
+    get_corr_save(data[:, :, 600:1200], directory, curr_expirement + "_-10to0min", curr_expirement + " -10 to 0 min")
     get_corr_save(data[:, :, 1200:1800], directory,curr_expirement + "_0to10min", curr_expirement + " 0 to 10 min")
     get_corr_save(data[:, :, 1800:2400], directory, curr_expirement + "_10to20min", curr_expirement + " 10 to 20 min")
 
@@ -135,10 +137,64 @@ def gsr_pix():
     roi_data = pix_to_roi(pix_data)
     time_periods_save(roi_data, dest, "gsr_pix")
 
+# gsr_pix()
+def gsrpix_bproi():
+    dest = make_dest("gsrpix_bproi")
+    pix_data = load_pix()
+    gsr(pix_data)
+    roi_data = pix_to_roi(pix_data)
+    bandpass(roi_data)
+    time_periods_save(roi_data, dest, "gsrpix_bproi")
 
-    
-    
+# t = time.time()  
+# gsrpix_bproi()
+# print(time.time() - t)  
 
+def gsrroi_bproi():
+    dest = make_dest("gsrroi_bproi")
+    data = load_roi()
+    gsr(data)
+    bandpass(data)
+    time_periods_save(data, dest, "gsrroi_bproi")
+# gsrroi_bproi()
+    
+def bppix_gsrpix():
+    dest = make_dest("bppix_gsrpix")
+    pix_data = load_pix()
+    bandpass(pix_data)
+    gsr(pix_data)
+    roi_data = pix_to_roi(pix_data)
+    time_periods_save(roi_data, dest, "bppix_gsrpix")
+# bppix_gsrpix()
+
+def bproi_gsroi():
+    dest = make_dest("bproi_gsroi")
+    roi_data = load_roi()
+    bandpass(roi_data)
+    gsr(roi_data)
+    time_periods_save(roi_data, dest, "bproi_gsroi")
+
+# bproi_gsroi()
+def mask_gsrpix_bproi():
+    dest = make_dest("mask_gsrpix_bproi")
+    pix_data = load_pix()
+    mask_filter(pix_data)
+    gsr(pix_data)
+    roi_data = pix_to_roi(pix_data)
+    bandpass(roi_data)
+    time_periods_save(roi_data, dest, "mask_gsrpix_bproi")
+mask_gsrpix_bproi()
+
+def mask_bppix_gsrpix():
+    dest = make_dest("mask_bppix_gsrpix")
+    pix_data = load_pix()
+    mask_filter(pix_data)
+    bandpass(pix_data)
+    gsr(pix_data)
+    roi_data = pix_to_roi(pix_data)
+    time_periods_save(roi_data, dest, "mask_bppix_gsrpix")
+mask_bppix_gsrpix()
+    
 
     
 

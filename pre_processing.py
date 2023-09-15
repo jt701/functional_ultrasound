@@ -1,6 +1,9 @@
 from scipy.signal import butter, filtfilt
 import numpy as np
 import time
+from sklearn.decomposition import FastICA
+from nilearn import plotting
+import matplotlib.pyplot as plt
 
 # import sys
 # sys.path.append('../../helper.py')
@@ -109,17 +112,25 @@ def keep_roi_pixels(pix_data, masks):
     masked_data = pix_data * binary_mask[:, :, np.newaxis]
     return masked_data
 
-# t = time.time()
-# b = pixel_to_ROI("python_data/time_series_data/pixel_data/nalket_m_pix.npy",
-#              "matlab_files/Time_Series_Data/segment_masks/nalket_m_mask.mat",
-#              "matlab_files/Time_Series_Data/pix_area/pix_area_nalket_m.mat", 5)
-# print(time.time() - t)
-# t2 = time.time()
-# b = pixel_to_ROI_vectorized("python_data/time_series_data/pixel_data/nalket_m_pix.npy",
-#              "matlab_files/Time_Series_Data/segment_masks/nalket_m_mask.mat",
-#              "matlab_files/Time_Series_Data/pix_area/pix_area_nalket_m.mat", 5)
-# print(time.time() - t2)
+def ica(data, num_components):
+    num_samples = data.shape[-1]
+    fus_data_2d = data.reshape((-1, num_samples))
 
+    ica = FastICA(n_components=num_components)
+
+    components = ica.fit_transform(fus_data_2d.T)
+
+    # Reshape components back to original shape
+    independent_components = independent_components.T.reshape((num_components, -1))
+
+    # Visualize ICA components using Nilearn
+    for i in range(num_components):
+        plotting.plot_stat_map(independent_components[i], display_mode='z', cut_coords=3, title=f'Component {i + 1}')
+        plt.show()
+
+# data = helper.load_data_np("matlab_files/Time_Series_Data/ROI_CBV_Data/rel_cbv_nalket_m.mat")[4]
+# data = bandpass_filter(data, 0.01, 0.1, 4)
+# ICA(data)
 
 
         
