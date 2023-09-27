@@ -102,9 +102,9 @@ def num_over_corr2(corr_matrix, value):
 def plot_correlation(corr_matrix, x_label = " ", y_label = " ", title = " ", min = 'omit', max= 'omit'):
     plt.figure()
     if min != "omit" and max != "omit":
-        sns.heatmap(corr_matrix, cmap='coolwarm', vmin = min, vmax= max)
+        sns.heatmap(corr_matrix, cmap='plasma', vmin = min, vmax= max)
     else:
-        sns.heatmap(corr_matrix, cmap='coolwarm')
+        sns.heatmap(corr_matrix, cmap='plasma')
     plt.xlabel(x_label)
     plt.ylabel(y_label)
     plt.title(title)

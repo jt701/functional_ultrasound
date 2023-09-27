@@ -7,6 +7,7 @@ import helper as helper
 import matplotlib.pyplot as plt
 import seed_corr as seed
 import stats
+from sklearn.decomposition import FastICA, PCA
 
 
 # test SVD and global signal regression
@@ -230,11 +231,11 @@ def plot_region():
     # compare 4 and 7 to bandpass
 
     # data[7] = pre.bandpass_filter(data[7], 0.01, 0.1, 4)
-    plt.plot(data[8, 19, :])
+    plt.plot(data[2, 12, :])
     plt.show()
 
 
-# plot_region()
+plot_region()
 
 def test_dianni():
     data = helper.load_data_np('matlab_files/dianni_data/nalket_dianni.mat')
@@ -259,9 +260,48 @@ def dianni_center():
 # dianni_center()
 
 def add_hamming():
-    data = helper.load_data_np('matlab_files/Time_Series_Data/ROI_CBV_Data/rel_cbv_nalket_m.mat')
+    data = helper.load_data_np(
+        'matlab_files/Time_Series_Data/ROI_CBV_Data/rel_cbv_nalket_m.mat')
+    hamming = helper.load_data_np('matlab_files/dianni_data/hamm_win.mat')
     data = data[:, :, 150:1051]
     data = pre.bandpass_filter(data, 0.01, 0.1, 4)
-    corr = helper.get_corr_matrix
+    data = data * hamming.T
+    corr = helper.get_corr_matrix(data)[1]
+    helper.plot_correlation_ROI(corr)
 
-add_hamming()
+
+# add_hamming()
+def gsr_dianni():
+    data = helper.load_data_np('matlab_files/dianni_data/nalket_dianni.mat')
+    for i in range(data.shape[0]):
+        data[i] = pre.global_signal_regression_proj(data[i])
+    hamming = helper.load_data_np('matlab_files/dianni_data/hamm_win.mat')
+    windowed_data = hamming.T * data
+    corr = helper.get_corr_matrix(windowed_data)[1]
+    helper.plot_correlation_ROI(corr)
+# gsr_dianni()
+
+def ica_test():
+    data = helper.load_data_np('matlab_files/dianni_data/nalket_dianni.mat')
+    data = data[4, :, :].T
+    data_centered = data - data.mean(axis=0)
+    pca = PCA(whiten=True)
+    data_whitened = pca.fit_transform(data_centered)
+    num_components = 5
+    ica = FastICA(n_components=num_components)
+    ica.fit(data_whitened)
+    components = ica.components_
+    np.save('python_data/', components)
+# ica_test()
+
+# def ica_load():
+#     ica = np.load('python_data/ica.npy')
+#     print(ica[0])
+# ica_load()
+
+def signal():
+    data = helper.load_data_np(
+        'matlab_files/Time_Series_Data/ROI_CBV_Data/rel_cbv_nalket_m.mat')
+    plt.figure()
+    
+
