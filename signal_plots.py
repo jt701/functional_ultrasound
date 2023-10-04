@@ -31,7 +31,7 @@ def plot_subplot(ax, data, mouse, region1, region2, shift=100, xlab="Region 1", 
     # ax.legend()
     
     return ax
-def plot_subplots(data, region1, region2, shift, title=""):
+def plot_subplots(data, region1, region2, shift, title_big=""):
     num_mice = data.shape[0]
     fig, axes = plt.subplots(3, 3)
     for i in range(3):
@@ -41,32 +41,33 @@ def plot_subplots(data, region1, region2, shift, title=""):
             mouse_num = 3*i + j
             title = "Mouse" + str(mouse_num)
             plot_subplot(axes[i,j], data, mouse_num, region1, region2, shift, title=title, xlab="RE1", ylab="RE2")
-    fig.suptitle(title)
+    fig.suptitle(title_big)
     plt.tight_layout()
     plt.show()
     
-# data = helper.load_data_np('matlab_files/dianni_data/nalket_dianni.mat')
-data_baseline = helper.load_data_np('matlab_files/dianni_data/nalket_dianni_baseline.mat')
-# hamming = helper.load_data_np('matlab_files/dianni_data/hamm_win.mat')
-hamming = scipy.signal.windows.hamming(data_baseline.shape[-1])
-windowed_data = hamming.T * data_baseline
-# plot_subplots(windowed_data, 6, 14, 150, title="Low Correlation: 2.5-17.5min")
+data = helper.load_data_np('matlab_files/dianni_data/nalket_dianni.mat')
+# data_baseline = helper.load_data_np('matlab_files/dianni_data/nalket_dianni_baseline.mat')
+hamming = helper.load_data_np('matlab_files/dianni_data/hamm_win.mat')
+# hamming_baseline = scipy.signal.windows.hamming(data_baseline.shape[-1])
+windowed_data = hamming.T * data
+plot_subplots(windowed_data, 2, 10, 150, title_big="Low Correlation: 2.5-17.5min")
 
 
 
 # plot_regions(windowed_data, 7, 2, 14)
 
 
-corr = helper.get_corr_matrix(windowed_data)[0]
-helper.plot_correlation_ROI(corr)
+# corr = helper.get_corr_matrix(windowed_data)[0]
+# helper.plot_correlation(corr)
 #high 8/12, low 2/14
 
 
 #to do
 # 1. align my data and recreate in comparison to Tommasso's
-# 2. read more literature
+    #stay within this time frame and make it right
+# 2. read more literature, sure, iffy
 # 3. Create standardized functions to do this
 # 4. Make my correlation maps have his labels and neat and hamming
         #dictioniary with names could be convenient
-# 5. Look into his detrending, 4th degree polynomials, etc. 
-# 6. basleina nd 1 normlaization
+# 5. Look into his detrending, 4th degree polynomials, etc, but not too much
+# 6. basleina nd 1 normlaization, SD normalization, how is this done in the literature?
