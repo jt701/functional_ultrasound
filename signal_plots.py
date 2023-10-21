@@ -118,16 +118,18 @@ def load_dianni():
 
 #my data corr and plots
 def plot_mine():
-    data = helper.load_data_np('matlab_files/Time_Series_Data/ROI_CBV_Data/nalket_m_roi.mat')
-    data = pre.bandpass_filter(data, 0.01, 0.1, 4)[:, :, 150:1051]
+    data = helper.load_data_np('matlab_files/Time_Series_Data/ROI_CBV_Data/salket_m_roi.mat')
+    data = pre.bandpass_filter(data, 0.01, 0.1, 5)[:, :, 2500:3500]
     hamming = scipy.signal.windows.hamming(data.shape[-1])
     data = hamming.T * data
+    plot_corr(data, reorder=True)
     # plot_corr(data, reorder=True)
     # corr = helper.get_corr_matrix(data)[0]
     # corr = reorder_corr(corr)
     # helper.plot_correlation_ROI(corr)
 # plot_regions(windowed_data, 7, 2, 14)
 
+plot_mine()
 # def random_corr_matrix():
 #     corr = helper.get_corr_matrix(windowed_data)[0]
 #     plot_corr(windowed_data)
@@ -140,11 +142,12 @@ def normalize_test():
     hamming_data = scipy.signal.windows.hamming(data.shape[-1])
     data_baseline = hamming_baseline.T * data_baseline
     data = hamming_data.T * data
-    # data = normalize_to_baseline(data_baseline, data)
-    # date = normalize_to_sample(data)
-    plot_subplots(data, 2, 3, 150)
+    # data = normalize_to_baseline(data_baseline, data) 
+    data = normalize_to_sample(data)
+    plot_subplots(data, 8, 13, 150)
+    # plot_corr(data, title="Correlations 2.5-17.5min")
 
-normalize_test()
+# normalize_test()
 
 # to do
 # 1. align my data and recreate in comparison to Tommasso's
