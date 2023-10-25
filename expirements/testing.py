@@ -1,12 +1,20 @@
 # file to do expirements without losing past ideas
 # put current expirement at bottom and run
+
+import os
+import sys
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
+sys.path.append(parent_dir)
+
 import numpy as np
 import time
-import pre_processing as pre
-import helper as helper
+import helpers.pre_processing as pre
+import helpers.helper as helper
 import matplotlib.pyplot as plt
-import seed_corr as seed
-import stats
+import helpers.seed_corr as seed
+import helpers.stats as stats
 from sklearn.decomposition import FastICA, PCA
 
 
@@ -303,5 +311,5 @@ def signal():
     data = helper.load_data_np(
         'matlab_files/Time_Series_Data/ROI_CBV_Data/rel_cbv_nalket_m.mat')
     plt.figure()
-    
+
 

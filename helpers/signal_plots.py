@@ -1,11 +1,12 @@
-import helper as helper
+import helpers.helper as helper
 import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
 import scipy
-import pre_processing as pre
+import helpers.pre_processing as pre
 
 
+#plots all regions for mouse group in 3 by 3 plot
 def plot_regions(data, mouse, region1, region2, shift=0, xlab="Region 1", ylab="Region 2", title="Region 1 vs Region 2"):
     x_axis = np.arange(data.shape[-1]) + shift
     plt.plot(x_axis, data[mouse, region1, :], label=xlab, color='blue')
@@ -17,7 +18,7 @@ def plot_regions(data, mouse, region1, region2, shift=0, xlab="Region 1", ylab="
     plt.legend()
     plt.show()
 
-#plot corr, can reorder if necessary
+#plot corr, can reorder if necessary (if not using Tommasso's data)
 def plot_corr(data, title="Correlations", reorder=False):
     corr = helper.get_corr_matrix(data)[0]
     if reorder:
@@ -34,7 +35,7 @@ def plot_corr(data, title="Correlations", reorder=False):
     plt.title(title)
     plt.show()
 
-
+#plotting subplot, helper function
 def plot_subplot(ax, data, mouse, region1, region2, shift=100, xlab="Region 1", ylab="Region 2", title="Region 1 vs Region 2"):
     x_axis = np.arange(data.shape[-1]) + shift
 
@@ -49,7 +50,7 @@ def plot_subplot(ax, data, mouse, region1, region2, shift=100, xlab="Region 1", 
 
     return ax
 
-
+#plot several subplots
 def plot_subplots(data, region1, region2, shift, title_big=""):
     num_mice = data.shape[0]
     fig, axes = plt.subplots(3, 3)
@@ -65,7 +66,7 @@ def plot_subplots(data, region1, region2, shift, title_big=""):
     plt.tight_layout()
     plt.show()
 
-#reorder correlation matrix to be more brain oriented
+#reorder correlation matrix to be more brain oriented, only when going from my data to Tommasso's
 def reorder_corr(corr):
     brain_ordering = ['AI L','GIDI L','S1 L','M1 L','M2 L','Cg1 L','PrL L','IL L','CPu L','NAcC L','NAcSh L',
     'NAcSh R','NAcC R','CPu R','IL R','PrL R','Cg1 R','M2 R','M1 R','S1 R','GIDI R','AI R']
@@ -97,6 +98,7 @@ def normalize_to_baseline(baseline, sample):
     normalized_data = (sample - baseline_means) / baseline_std
     return normalized_data
 
+#normalize sample to itself
 def normalize_to_sample(sample):
     sample_mean = np.mean(sample, axis=2)
     sample_std = np.std(sample, axis=2)
@@ -110,11 +112,13 @@ def load_dianni():
     data = helper.load_data_np('matlab_files/dianni_data/nalket_dianni.mat') #di ianni data
     hamming = helper.load_data_np('matlab_files/dianni_data/hamm_win.mat')
     windowed_data = hamming.T * data
+    plot_corr(windowed_data)
 
     # data_baseline = helper.load_data_np('matlab_files/dianni_data/nalket_dianni_baseline.mat')
     # hamming_baseline = scipy.signal.windows.hamming(data_baseline.shape[-1])
 
-    plot_subplots(windowed_data, 2, 10, 150, title_big="Low Correlation: 2.5-17.5min")
+    # plot_subplots(windowed_data, 2, 10, 150, title_big="Low Correlation: 2.5-17.5min")
+# load_dianni()
 
 #my data corr and plots
 def plot_mine():
@@ -129,7 +133,7 @@ def plot_mine():
     # helper.plot_correlation_ROI(corr)
 # plot_regions(windowed_data, 7, 2, 14)
 
-plot_mine()
+# plot_mine()
 # def random_corr_matrix():
 #     corr = helper.get_corr_matrix(windowed_data)[0]
 #     plot_corr(windowed_data)
@@ -148,13 +152,3 @@ def normalize_test():
     # plot_corr(data, title="Correlations 2.5-17.5min")
 
 # normalize_test()
-
-# to do
-# 1. align my data and recreate in comparison to Tommasso's
-# stay within this time frame and make it right
-# 2. read more literature, sure, iffy
-# 3. Create standardized functions to do this
-# 4. Make my correlation maps have his labels and neat and hamming
-# dictioniary with names could be convenient
-# 5. Look into his detrending, 4th degree polynomials, etc, but not too much
-# 6. basleina nd 1 normlaization, SD normalization, how is this done in the literature?

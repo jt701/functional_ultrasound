@@ -5,10 +5,10 @@ import os
 current_dir = os.path.dirname(os.path.abspath("/Users/josepht/functional-ultrasound-ketamine/data_analysis/expirements/ROI_expirements.py"))
 parent_dir = os.path.dirname(current_dir)
 sys.path.append(parent_dir)
-import helper as helper
-import pre_processing as pre
+import helpers.helper as helper
+import helpers.pre_processing as pre
 import matplotlib.pyplot as plt
-import stats 
+import helpers.stats as stats 
 
 # REGION 13/27 show interesting connection
 #write functions that take p value, finds correlations that are significant (look at multiple comparisons corrections)

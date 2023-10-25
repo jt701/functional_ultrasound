@@ -1,8 +1,8 @@
 import numpy as np
 from scipy.stats import t
 import math
-import helper
-import pre_processing as pre
+import helpers.helper as helper
+import helpers.pre_processing as pre
 
 
 # gets corr_value for which certain comparison is greater than with alpha = p_val

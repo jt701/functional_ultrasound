@@ -12,8 +12,8 @@ current_dir = os.path.dirname(os.path.abspath("/Users/josepht/functional-ultraso
 parent_dir = os.path.dirname(current_dir)
 sys.path.append(parent_dir)
 
-import helper as helper
-import pre_processing as pre
+import helpers.helper as helper
+import helpers.pre_processing as pre
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns

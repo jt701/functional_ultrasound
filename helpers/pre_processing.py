@@ -4,14 +4,11 @@ import time
 from sklearn.decomposition import FastICA
 from nilearn import plotting
 import matplotlib.pyplot as plt
+import scipy
 
 # import sys
 # sys.path.append('../../helper.py')
-import helper as helper 
-
-#implement bandpass filter and global signal regression
-#should there be trimming or additional filtering down before global signal regression???
-#interesting to see if global regression would be more helpful with ROI data to ROI data because there isn't random pixel noise
+import helpers.helper as helper
 
 #takes in data and assumes time is along last dimension
 #applies bandpass filter fromm [lowcut, highcut] Hz of order 
@@ -25,6 +22,11 @@ def bandpass_filter(cbv_data, lowcut, highcut, order):
     filtered_data = filtfilt(b, a, cbv_data, axis=-1)
     return filtered_data
 
+#applies hamming window on data and returns new data
+def hamming(data):
+    hamming_data = scipy.signal.windows.hamming(data.shape[-1])
+    new_data = hamming_data * data
+    return new_data
 #removes global signal, should only use on a singular mouse
 #modeled by global signal and constant noise (np.ones)
 def global_signal_regression(cbv_data):

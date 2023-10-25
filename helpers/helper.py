@@ -98,6 +98,19 @@ def num_over_corr2(corr_matrix, value):
             indices.append([i, i + 1])
     return num, indices
 
+def plot_corr_labels(corr, title="Correlations"):
+    plt.figure()
+    sns.heatmap(corr, cmap='plasma', vmin=0.3, vmax=0.8)
+    plt.xlabel("Region 1")
+    plt.ylabel("Region 2")
+    locs = [i + 0.5 for i in range(len(corr[0]))]
+    labels = ['AI L','GIDI L','S1 L','M1 L','M2 L','Cg1 L','PrL L','IL L','CPu L','NAcC L','NAcSh L',
+    'NAcSh R','NAcC R','CPu R','IL R','PrL R','Cg1 R','M2 R','M1 R','S1 R','GIDI R','AI R']
+    plt.xticks(locs, labels, rotation=90)
+    plt.yticks(locs, labels)
+    plt.title(title)
+    plt.show()
+
 #creates correlation matrix and plots via seaborn
 def plot_correlation(corr_matrix, x_label = " ", y_label = " ", title = " ", min = 'omit', max= 'omit'):
     plt.figure()
@@ -110,7 +123,7 @@ def plot_correlation(corr_matrix, x_label = " ", y_label = " ", title = " ", min
     plt.title(title)
     plt.show()
 
-#plots numbers along with colots
+#plots numbers along with colors for correlation matrices
 #plots from 1-10 by multiplying by 10, makes more readable
 def plot_correlation_ROI(corr_matrix, x_label = "Region 1", y_label = "Region 2"):
     corr_matrix = np.round(corr_matrix, 1) * 10

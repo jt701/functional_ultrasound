@@ -1,7 +1,7 @@
-import helper as helper
+import helpers.helper as helper
 import matplotlib.pyplot as plt
 import numpy as np
-import pre_processing as pre
+import helpers.pre_processing as pre
 
 
     
