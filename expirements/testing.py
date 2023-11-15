@@ -16,6 +16,7 @@ import matplotlib.pyplot as plt
 import helpers.seed_corr as seed
 import helpers.stats as stats
 from sklearn.decomposition import FastICA, PCA
+from scipy.signal import hilbert
 
 
 # test SVD and global signal regression
@@ -243,7 +244,7 @@ def plot_region():
     plt.show()
 
 
-plot_region()
+# plot_region()
 
 def test_dianni():
     data = helper.load_data_np('matlab_files/dianni_data/nalket_dianni.mat')
@@ -311,5 +312,15 @@ def signal():
     data = helper.load_data_np(
         'matlab_files/Time_Series_Data/ROI_CBV_Data/rel_cbv_nalket_m.mat')
     plt.figure()
+    
+def phase():
+    data = helper.load_data_np('matlab_files/dianni_data/nalket_dianni.mat')[:, :, 0:600]
+    data2 = helper.load_data_np('matlab_files/dianni_data/nalket_dianni_baseline.mat')[:, :, 0:600]
+    data = pre.hamming(data2)
+    hilbert_transform = hilbert(data, axis=-1)
+    instantaneous_phase = np.angle(hilbert_transform) * 180/3.14
+    plt.plot(instantaneous_phase[3, 4, :])
+    plt.show()
 
-
+#plots between groups, differences need to be plotted 
+phase()

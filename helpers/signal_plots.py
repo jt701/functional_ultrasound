@@ -50,6 +50,39 @@ def plot_subplot(ax, data, mouse, region1, region2, shift=100, xlab="Region 1", 
 
     return ax
 
+def plot_subplot_phase(ax, data, mouse, region1, region2, shift=100):
+    x_axis = np.arange(data.shape[-1]) + shift
+    
+    phase_difference = data[mouse, region2, :] - data[mouse, region1, :]
+    labels = ['AI L','GIDI L','S1 L','M1 L','M2 L','Cg1 L','PrL L','IL L','CPu L','NAcC L','NAcSh L',
+    'NAcSh R','NAcC R','CPu R','IL R','PrL R','Cg1 R','M2 R','M1 R','S1 R','GIDI R','AI R']
+    
+    ax.plot(x_axis, phase_difference, color='blue')
+    r1 = labels[region1]
+    r2 = labels[region2]
+    title = "Phase Difference: " + r2 + " - " + r1
+    ax.set_xlabel('Time(sec) post ketamine')
+    ax.set_ylabel("Phase Difference")
+    ax.set_title(title, fontsize=8)
+    # ax.legend(loc='upper left', bbox_to_anchor=(1, 1))
+    # ax.legend()
+
+    return ax
+def plot_subplots_phase(data, region1, region2, shift, title_big="Phase Differences"):
+    num_mice = data.shape[0]
+    fig, axes = plt.subplots(3, 3)
+    for i in range(3):
+        for j in range(3):
+            if 3*i + j > num_mice - 1:
+                continue
+            mouse_num = 3*i + j
+            title = "Mouse" + str(mouse_num)
+            plot_subplot_phase(axes[i, j], data, mouse_num, region1,
+                         region2, shift)
+    fig.suptitle(title_big)
+    plt.tight_layout()
+    plt.show()
+
 #plot several subplots
 def plot_subplots(data, region1, region2, shift, title_big=""):
     num_mice = data.shape[0]

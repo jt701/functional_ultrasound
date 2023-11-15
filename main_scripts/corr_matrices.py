@@ -12,7 +12,8 @@ import helpers.pre_processing as pre
 #load Tommasso data using helper function, apply hamming window
 #here you can choose file from Tommasso script, can do your own splicing if you'd like
 #relative path to where the matlab file is stored should be used
-data = helper.load_data_np('matlab_files/dianni_data/nalket_dianni.mat') 
+data = helper.load_data_np('matlab_files/dianni_data/salket_m_full.mat') 
+data = data[:, :, 1350:1950]
 data = pre.hamming(data)
 
 #get_corr_matrix returns tuple
