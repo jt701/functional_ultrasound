@@ -5,6 +5,7 @@ import numpy as np
 import scipy
 import helpers.pre_processing as pre
 import math
+from scipy.signal import hilbert
 
 
 #plots all regions for mouse group in 3 by 3 plot
@@ -76,7 +77,7 @@ def label_to_index(label):
     
 
 #plotting subplot, helper function
-def plot_subplot(ax, data, mouse, region1, region2, shift=100, title="Region 1 vs Region 2"):
+def plot_subplot(ax, data, mouse, region1, region2, shift=100, title="Region 1 vs Region 2", ylabel="Signal"):
     x_axis = (np.arange(data.shape[-1]) + shift) / 60
     
     labels = ['AI L','GIDI L','S1 L','M1 L','M2 L','Cg1 L','PrL L','IL L','CPu L','NAcC L','NAcSh L',
@@ -86,7 +87,7 @@ def plot_subplot(ax, data, mouse, region1, region2, shift=100, title="Region 1 v
     ax.plot(x_axis, data[mouse, region2, :], label=labels[region2], color='red')
 
     ax.set_xlabel('Time(min) post ketamine')
-    ax.set_ylabel('Signal')
+    ax.set_ylabel(ylabel)
     ax.set_title(title, fontsize=8)
     ax.legend(fontsize='small')
     # ax.legend(loc='upper left', bbox_to_anchor=(1, 1))
@@ -96,8 +97,7 @@ def plot_subplot(ax, data, mouse, region1, region2, shift=100, title="Region 1 v
 
 def plot_subplot_phase(ax, data, mouse, region1, region2, shift=100):
     x_axis = (np.arange(data.shape[-1]) + shift) / 60
-    
-    phase_difference = data[mouse, region2, :] - data[mouse, region1, :]
+    phase_difference = np.arccos(np.cos(data[mouse, region2, :] - data[mouse, region1, :])) * 180/math.pi
     labels = ['AI L','GIDI L','S1 L','M1 L','M2 L','Cg1 L','PrL L','IL L','CPu L','NAcC L','NAcSh L',
     'NAcSh R','NAcC R','CPu R','IL R','PrL R','Cg1 R','M2 R','M1 R','S1 R','GIDI R','AI R']
     
@@ -118,7 +118,10 @@ def plot_subplots_phase(data, region1, region2, center, length, labels=False):
         region1 = label_to_index(region1)
         region2 = label_to_index(region2)
     left, right, shift = get_splicing_info(center, length)
-    spliced_data = data[:, :, left:right]
+    data = data[:, :, left:right]
+    data = pre.hamming(data)
+    hilbert_transform = hilbert(data, axis=-1)
+    data = np.angle(hilbert_transform) 
     num_mice = data.shape[0]
     fig, axes = plt.subplots(3, 3)
     for i in range(3):
@@ -126,7 +129,7 @@ def plot_subplots_phase(data, region1, region2, center, length, labels=False):
             if 3*i + j > num_mice - 1:
                 continue
             mouse_num = 3*i + j
-            plot_subplot_phase(axes[i, j], spliced_data, mouse_num, region1,
+            plot_subplot_phase(axes[i, j], data, mouse_num, region1,
                          region2, shift)
     title_big="Phase Differences"
     fig.suptitle(title_big)
@@ -134,14 +137,17 @@ def plot_subplots_phase(data, region1, region2, center, length, labels=False):
     plt.show()
 
 def phase_diff(data, mouse, region1, region2, center, length, labels=False):
-    x_axis = (np.arange(data.shape[-1]) + shift) / 60
+    
     if labels:
         region1 = label_to_index(region1)
         region2 = label_to_index(region2)
     left, right, shift = get_splicing_info(center, length)
-    spliced_data = data[:, :, left:right]
-    
-    phase_difference = np.arccos(np.cos(spliced_data[mouse, region2, :] - spliced_data[mouse, region1, :])) * 180/math.pi
+    data = data[:, :, left:right]
+    data = pre.hamming(data)
+    hilbert_transform = hilbert(data, axis=-1)
+    data = np.angle(hilbert_transform) 
+    x_axis = (np.arange(data.shape[-1]) + shift) / 60
+    phase_difference = np.arccos(np.cos(data[mouse, region2, :] - data[mouse, region1, :])) * 180/math.pi
     labels = ['AI L','GIDI L','S1 L','M1 L','M2 L','Cg1 L','PrL L','IL L','CPu L','NAcC L','NAcSh L',
     'NAcSh R','NAcC R','CPu R','IL R','PrL R','Cg1 R','M2 R','M1 R','S1 R','GIDI R','AI R']
     
@@ -157,12 +163,16 @@ def phase_diff(data, mouse, region1, region2, center, length, labels=False):
     plt.show()
 
 #plot several subplots
-def plot_subplots(data, region1, region2, center, length, labels=False, title_big = ""):
+def plot_subplots(data, region1, region2, center, length, labels=False, title_big = "", ylabel="Signal", hilb=False):
     if labels:
         region1 = label_to_index(region1)
         region2 = label_to_index(region2)
     left, right, shift = get_splicing_info(center, length)
-    spliced_data = data[:, :, left:right]
+    data = data[:, :, left:right]
+    data = pre.hamming(data)
+    if hilb:
+        hilbert_transform = hilbert(data, axis=-1)
+        data = (np.angle(hilbert_transform))*180/math.pi
     num_mice = data.shape[0]
     fig, axes = plt.subplots(3, 3)
     for i in range(3):
@@ -171,8 +181,25 @@ def plot_subplots(data, region1, region2, center, length, labels=False, title_bi
                 continue
             mouse_num = 3*i + j
             title = "Mouse" + str(mouse_num)
-            plot_subplot(axes[i, j], spliced_data, mouse_num, region1,
-                         region2, shift, title=title)
+            plot_subplot(axes[i, j], data, mouse_num, region1,
+                         region2, shift, title=title, ylabel=ylabel)
+    fig.suptitle(title_big)
+    plt.tight_layout()
+    plt.show()
+    
+#plot several subplots
+def plot_phases_both(data, mouse_num, region1, region2, center, length, labels=False, title_big = ""):
+    if labels:
+        region1 = label_to_index(region1)
+        region2 = label_to_index(region2)
+    left, right, shift = get_splicing_info(center, length)
+    data = data[:, :, left:right] * 180/math.pi
+    data = pre.hamming(data)
+    hilbert_transform = hilbert(data, axis=-1)
+    data = np.angle(hilbert_transform) 
+    fig, axes = plt.subplots(figsize=(12, 8))
+    plot_subplot(axes, data, mouse_num, region1,
+                    region2, shift, title="Phase Plots", ylabel="Phase Angle")
     fig.suptitle(title_big)
     plt.tight_layout()
     plt.show()
