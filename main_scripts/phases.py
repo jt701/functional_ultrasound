@@ -31,7 +31,10 @@ data = helper.load_data_np('matlab_files/dianni_data/salket_m_full.mat')
 
 
 #phase, all mice two regions
-sig.plot_subplots(data, 'cg1l', 'naccl', 0, 5, True, ylabel="Phase Angles", hilb=True)
+# sig.plot_subplots(data, 'cg1l', 'naccl', 0, 5, True, ylabel="Phase Angles", hilb=True)
 
 #phase, one mouse two regions
-# sig.plot_phases_both(data, 6, 'Cg1l','naccl',0, 10, True)
+sig.plot_phases_both(data, 6, 'cpul','naccl',20, 60, True, True)
+
+#cpul/cpur constant high, look same when unwrapped
+#

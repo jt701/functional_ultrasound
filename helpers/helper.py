@@ -41,17 +41,25 @@ def save_large_np(file_path, destination_folder):
     save_path = destination_folder + "/" + file_name
     np.save(save_path, data)
     
+#gets indices for splicing, takes in center/length in minutes
+#return left, right, shift
+def get_splicing_info(center, length):
+    right = center * 60 + length * 30 + 1200 
+    left = center * 60 - length * 30 + 1200
+    shift = left - 1200
+    return left, right, shift
 
+    
+    
 #gets correlation matrix for all mice and averages them out 
 #mouse_num paramter allows you to select specific mouse only
 #return averaged corr. matrix as well as std. corr matrix for frames from start to end
-def get_corr_matrix(mice_data, mouse_num = -1, start = 0, end = 10000):
+def get_corr_matrix(mice_data, mouse_num = -1):
     matrices = []
-    end = min(end, mice_data.shape[-1])
     if mouse_num != -1:
-        return np.corrcoef(mice_data[mouse_num, :, start: end])
+        return np.corrcoef(mice_data[mouse_num, :, :])
     for i in range(mice_data.shape[0]):
-        mouse_data = mice_data[i, :, start:end]
+        mouse_data = mice_data[i, :, :]
         matrices.append(np.corrcoef(mouse_data))
     np_matrices = np.array(matrices)
     return np.mean(np_matrices, axis = 0), np.std(np_matrices, axis = 0, ddof=1) #ddof because we have sample 

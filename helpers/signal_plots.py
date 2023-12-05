@@ -188,15 +188,18 @@ def plot_subplots(data, region1, region2, center, length, labels=False, title_bi
     plt.show()
     
 #plot several subplots
-def plot_phases_both(data, mouse_num, region1, region2, center, length, labels=False, title_big = ""):
+def plot_phases_both(data, mouse_num, region1, region2, center, length, labels=False, unwrap = False, title_big = ""):
     if labels:
         region1 = label_to_index(region1)
         region2 = label_to_index(region2)
     left, right, shift = get_splicing_info(center, length)
-    data = data[:, :, left:right] * 180/math.pi
+    data = data[:, :, left:right] 
     data = pre.hamming(data)
     hilbert_transform = hilbert(data, axis=-1)
-    data = np.angle(hilbert_transform) 
+    if unwrap:
+        data = np.unwrap(np.angle(hilbert_transform)) * 180/math.pi
+    else:
+         data = np.angle(hilbert_transform) * 180/math.pi
     fig, axes = plt.subplots(figsize=(12, 8))
     plot_subplot(axes, data, mouse_num, region1,
                     region2, shift, title="Phase Plots", ylabel="Phase Angle")
