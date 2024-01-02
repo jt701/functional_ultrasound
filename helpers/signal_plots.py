@@ -206,6 +206,100 @@ def plot_phases_both(data, mouse_num, region1, region2, center, length, labels=F
     fig.suptitle(title_big)
     plt.tight_layout()
     plt.show()
+    
+#plotting subplot, helper function
+def plot_subplot_error(ax, data, region1, region2, shift=100, diff = False, title="Region 1 vs Region 2", ylabel="Signal"):
+    x_axis = (np.arange(data.shape[-1]) + shift) / 60
+    
+    labels = ['AI L','GIDI L','S1 L','M1 L','M2 L','Cg1 L','PrL L','IL L','CPu L','NAcC L','NAcSh L',
+    'NAcSh R','NAcC R','CPu R','IL R','PrL R','Cg1 R','M2 R','M1 R','S1 R','GIDI R','AI R']
+    
+    if not diff:
+        mean = np.mean(data, axis=0)
+        std_dev = np.std(data, axis=0)
+        std_error = std_dev / np.sqrt(data.shape[0])
+
+            
+        ax.plot(x_axis, mean[region1, :], label=labels[region1], color='blue')
+        ax.plot(x_axis, mean[region2, :], label=labels[region2], color='red')
+        
+        ax.fill_between(x_axis, mean[region1, :] + std_error[region1, :], mean[region1, :] - std_error[region1, :])
+        ax.fill_between(x_axis, mean[region2, :] + std_error[region2, :], mean[region2, :] - std_error[region2, :])
+    else:
+        data_diff = np.abs(data[:, region1, :] - data[:, region2, :])
+        mean = np.mean(data_diff, axis=0)
+        std_dev = np.std(data_diff, axis=0)
+        std_error = std_dev / np.sqrt(data.shape[0])
+        
+        ax.plot(x_axis, mean, label=labels[region1] + " vs " + labels[region2], color='blue')
+        ax.fill_between(x_axis, mean - std_error, mean + std_error)
+        
+    ax.set_xlabel('Time(min) post ketamine')
+    ax.set_ylabel(ylabel)
+    ax.set_title(title, fontsize=8)
+    ax.legend(fontsize='small')
+    # ax.legend(loc='upper left', bbox_to_anchor=(1, 1))
+    # ax.legend()
+
+    return ax
+
+#plotting subplot error helper, plots all mice on 1
+def plot_subplot_error_all(ax, data, region1, region2, shift=100, diff = False, title="Region 1 vs Region 2", ylabel="Signal"):
+    x_axis = (np.arange(data.shape[-1]) + shift) / 60
+    
+    labels = ['AI L','GIDI L','S1 L','M1 L','M2 L','Cg1 L','PrL L','IL L','CPu L','NAcC L','NAcSh L',
+    'NAcSh R','NAcC R','CPu R','IL R','PrL R','Cg1 R','M2 R','M1 R','S1 R','GIDI R','AI R']
+    
+    if not diff:
+        for rat in range(data.shape[0]):
+            ax.plot(x_axis, data[rat, region1, :], label=labels[region1] + "-" + rat, color='blue')
+            ax.plot(x_axis, data[rat, region2, :], label=labels[region2] + "-" + rat, color='red')
+    else:
+        data_diff = np.abs(data[:, region1, :] - data[:, region2, :])
+        
+        for rat in range(data.shape[0]):
+            ax.plot(x_axis, data_diff[rat, :], label=labels[region1] + " vs " + labels[region2] + "-" + rat, color='blue')
+        
+    ax.set_xlabel('Time(min) post ketamine')
+    ax.set_ylabel(ylabel)
+    ax.set_title(title, fontsize=8)
+    ax.legend(fontsize='small')
+    # ax.legend(loc='upper left', bbox_to_anchor=(1, 1))
+    # ax.legend()
+
+    return ax
+
+#plot several subplots with error
+#assumes labels for regionals, unwrapping, and standard error bars
+def plot_phases_both_error(data, region1, region2, center, length, diff = False, all = False, title_big = ""):
+    region1 = label_to_index(region1)
+    region2 = label_to_index(region2)
+    left, right, shift = get_splicing_info(center, length)
+    data = data[:, :, left:right] 
+    data = pre.hamming(data)
+    hilbert_transform = hilbert(data, axis=-1)
+    data_transform = np.angle(hilbert_transform)
+    data = np.unwrap(data_transform) * 180/math.pi
+    fig, axes = plt.subplots(figsize=(12, 8))
+    if all:
+        plot_subplot_error_all(axes, data, region1,
+                    region2, shift, diff = diff, title="Phase Plots (Standard Error and Mean)", ylabel="Phase Angle")
+    else:
+        plot_subplot_error(axes, data, region1,
+                    region2, shift, diff = diff, title="Phase Plots (Standard Error and Mean)", ylabel="Phase Angle")
+    fig.suptitle(title_big)
+    plt.tight_layout()
+    plt.show()
+    
+# def plot_all(data, region, center, length):
+#     regiodn = label_to_index(region)
+#     left, right, shift = get_splicing_info(center, length)
+#     data = data[:, :, left:right] 
+#     data = pre.hamming(data)
+#     hilbert_transform = hilbert(data, axis=-1)
+#     data_transform = np.angle(hilbert_transform)
+#     data = np.unwrap(data_transform) * 180/math.pi
+#plot all mice on one, plot diff and just region
 
 #reorder correlation matrix to be more brain oriented, only when going from my data to Tommasso's
 def reorder_corr(corr):

@@ -34,7 +34,16 @@ data = helper.load_data_np('matlab_files/dianni_data/salket_m_full.mat')
 # sig.plot_subplots(data, 'cg1l', 'naccl', 0, 5, True, ylabel="Phase Angles", hilb=True)
 
 #phase, one mouse two regions
-sig.plot_phases_both(data, 6, 'cpul','naccl',20, 60, True, True)
+# sig.plot_phases_both(data, 1, 'cpul','naccl',20, 60, True, True)
+
+#plot mean with standard error between two regions
+sig.plot_phases_both_error(data, 'm1r','m1l', 20, 60, True, True)
 
 #cpul/cpur constant high, look same when unwrapped
 #
+
+#std error and mean plots, raw and differences 
+#multiple mice same region, differences for all mice
+#overlay multiple mice, fix
+#derivative of those plots, for isntantensous 
+#individual animals, regions effect matrices test  
